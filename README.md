@@ -7,7 +7,6 @@ NEXUS is a multi-agent agentic workflow for the semi-automated generation of for
 This repository accompanies the paper:
 
 **"NEXUS: A Multi-Agent Agentic Workflow for Valid SysML v2 Model Generation from Unstructured Industrial Documentation"**
-*Oscar Berg, Christoph Klaassen — IECON 2026*
 
 ---
 
