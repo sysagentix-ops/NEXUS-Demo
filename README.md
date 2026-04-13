@@ -2,6 +2,10 @@
 
 > **Neural EXtraction for Unified Systems engineering**
 
+<p align="center">
+  <img src="NEXUS_sysmlv2_logo.png" alt="Logo" width="500"/>
+</p>
+
 NEXUS is a multi-agent agentic workflow for the semi-automated generation of formally valid SysML v2 models directly from unstructured technical documentation. It decomposes the modeling process into three specialized agents — **Extraction**, **Building**, and **Verification** — that collaboratively transform legacy industrial PDFs into compilable, traceable SysML v2 code.
 
 This repository accompanies the paper:
