@@ -59,18 +59,18 @@ Evaluated on **8 industrial-grade documents** with 5 independent runs per config
 
 | Configuration | Syntactic Validity | Semantic Coverage | Hallucination ↓ |
 |---|---|---|---|
-| **NEXUS (ours)** | **100 ± 0** | 81.6 ± 3.5 | **25.3 ± 3.9** |
-| Direct Generation (Opus 4.6) | 35.3 ± 4.2 | 85.4 ± 4.6 | 65.1 ± 5.7 |
+| **NEXUS (ours)** | **100 ± 0** | 81.3 ± 5.45 | **27.8 ± 5.06** |
+| Direct Generation (Opus 4.6) | 38.4 ± 5.14 | 85.5 ± 3.60 | 66.0 ± 10.36 |
 
-NEXUS achieves **100% syntactic validity** across all configurations, compared to 35% for the one-shot baseline, while reducing hallucination by a factor of **2.6×**.
+NEXUS achieves **100% syntactic validity** across all configurations, compared to 38% for the one-shot baseline, while reducing hallucination by a factor of **2.4×**.
 
 ### Ablation (on real-world H₂ fuel-cell spec)
 
 | Configuration | s_syn | s_sem | s_hal ↓ |
 |---|---|---|---|
-| NEXUS (full) | 100 ± 0 | 68 ± 3.8 | 32 ± 3.7 |
-| w/o Verification Agent | 82 ± 6.3 | 64 ± 4.7 | 36 ± 4.8 |
-| w/o JSON intermediate | 58 ± 8.4 | 51 ± 6.9 | 67 ± 7.6 |
+| NEXUS (full) | 100 ± 0 | 70 ± 4.2 | 35 ± 2.8 |
+| w/o Verification Agent | 80 ± 4.5 | 65 ± 3.8 | 34 ± 2.9 |
+| w/o JSON intermediate | 63 ± 5.6 | 55 ± 4.0 | 62 ± 5.6 |
 
 The **structured JSON intermediate** is the most impactful component for hallucination suppression, and the **Verification Agent** primarily enforces structural consistency on complex systems.
 
