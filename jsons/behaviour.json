@@ -1,0 +1,602 @@
+{
+  "hasStateMachine": true,
+  "states": [
+    {
+      "name": "OFF",
+      "type": "initial",
+      "description": "System is completely powered down, all active components are off",
+      "hasInvariants": false,
+      "hasEntryActions": false,
+      "hasExitActions": false,
+      "hasDoActions": false
+    },
+    {
+      "name": "STANDBY",
+      "type": "normal",
+      "description": "Control system active, safety checks performed, fuel cell and DC-DC converter off, battery ready",
+      "hasInvariants": true,
+      "invariants": [
+        {
+          "parameter": "h2Pressure",
+          "condition": "greater_than",
+          "value": {
+            "value": 100000,
+            "unit": "Pa"
+          },
+          "critical": true
+        },
+        {
+          "parameter": "batteryVoltage",
+          "condition": "greater_than",
+          "value": {
+            "value": 21,
+            "unit": "V"
+          },
+          "critical": true
+        }
+      ],
+      "hasEntryActions": true,
+      "entry_actions": [
+        "InitializeSystemControlModule",
+        "CheckH2Pressure",
+        "CheckBatteryStatus"
+      ],
+      "hasExitActions": false,
+      "hasDoActions": true,
+      "do_actions": [
+        "MonitorSafetyParameters"
+      ]
+    },
+    {
+      "name": "RUNNING",
+      "type": "normal",
+      "description": "Fuel cell generating power, DC-DC converter regulating voltage, battery providing/absorbing power as needed",
+      "hasInvariants": true,
+      "invariants": [
+        {
+          "parameter": "h2Pressure",
+          "condition": "greater_than",
+          "value": {
+            "value": 100000,
+            "unit": "Pa"
+          },
+          "critical": true
+        },
+        {
+          "parameter": "fuelCellTemperature",
+          "condition": "less_than",
+          "value": {
+            "value": 333,
+            "unit": "K"
+          },
+          "critical": true
+        }
+      ],
+      "hasEntryActions": true,
+      "entry_actions": [
+        "OpenSolenoidValve",
+        "StartFuelCellSystem",
+        "EnableDC-DCConverter"
+      ],
+      "hasExitActions": true,
+      "exit_actions": [
+        "StopFuelCellSystem",
+        "CloseSolenoidValve"
+      ],
+      "hasDoActions": true,
+      "do_actions": [
+        "MonitorPowerFlow",
+        "RegulateDC-DCConverter",
+        "ManageBatterySet"
+      ]
+    },
+    {
+      "name": "FAULT",
+      "type": "fault",
+      "description": "Safety violation or component failure detected, system in safe shutdown state",
+      "hasInvariants": false,
+      "hasEntryActions": true,
+      "entry_actions": [
+        "EmergencyStopFuelCellSystem",
+        "CloseSolenoidValve",
+        "DisableDC-DCConverter",
+        "LogFault"
+      ],
+      "hasExitActions": false,
+      "hasDoActions": false
+    }
+  ],
+  "transitions": [
+    {
+      "from": "OFF",
+      "to": "STANDBY",
+      "hasTrigger": true,
+      "trigger": {
+        "type": "event",
+        "name": "PowerOn",
+        "hasParameters": false
+      },
+      "hasGuards": false,
+      "hasEffects": false,
+      "hasTiming": false
+    },
+    {
+      "from": "STANDBY",
+      "to": "RUNNING",
+      "hasTrigger": true,
+      "trigger": {
+        "type": "event",
+        "name": "StartOperation",
+        "hasParameters": false
+      },
+      "hasGuards": true,
+      "guards": [
+        {
+          "parameter": "h2Pressure",
+          "operator": "greater_than",
+          "value": {
+            "value": 100000,
+            "unit": "Pa"
+          },
+          "description": "Sufficient hydrogen pressure available"
+        },
+        {
+          "parameter": "batterySOC",
+          "operator": "greater_than",
+          "value": {
+            "value": 0.1,
+            "unit": ""
+          },
+          "description": "Battery has sufficient charge for startup"
+        }
+      ],
+      "hasEffects": false,
+      "hasTiming": false
+    },
+    {
+      "from": "RUNNING",
+      "to": "STANDBY",
+      "hasTrigger": true,
+      "trigger": {
+        "type": "event",
+        "name": "StopOperation",
+        "hasParameters": false
+      },
+      "hasGuards": false,
+      "hasEffects": false,
+      "hasTiming": false
+    },
+    {
+      "from": "STANDBY",
+      "to": "OFF",
+      "hasTrigger": true,
+      "trigger": {
+        "type": "event",
+        "name": "PowerOff",
+        "hasParameters": false
+      },
+      "hasGuards": false,
+      "hasEffects": false,
+      "hasTiming": false
+    },
+    {
+      "from": "RUNNING",
+      "to": "FAULT",
+      "hasTrigger": true,
+      "trigger": {
+        "type": "condition",
+        "name": "SafetyViolationDetected",
+        "hasParameters": false
+      },
+      "hasGuards": false,
+      "hasEffects": true,
+      "effects": [
+        {
+          "action": "EmergencyShutdown",
+          "target": "Fuel Cell System",
+          "hasParameters": false
+        }
+      ],
+      "hasTiming": false
+    },
+    {
+      "from": "STANDBY",
+      "to": "FAULT",
+      "hasTrigger": true,
+      "trigger": {
+        "type": "condition",
+        "name": "SafetyViolationDetected",
+        "hasParameters": false
+      },
+      "hasGuards": false,
+      "hasEffects": false,
+      "hasTiming": false
+    },
+    {
+      "from": "FAULT",
+      "to": "OFF",
+      "hasTrigger": true,
+      "trigger": {
+        "type": "event",
+        "name": "ManualReset",
+        "hasParameters": false
+      },
+      "hasGuards": true,
+      "guards": [
+        {
+          "parameter": "faultCleared",
+          "operator": "equals",
+          "value": {
+            "value": true,
+            "unit": ""
+          },
+          "description": "Fault condition has been cleared by operator"
+        }
+      ],
+      "hasEffects": false,
+      "hasTiming": false
+    }
+  ],
+  "hasEvents": true,
+  "events": [
+    {
+      "name": "PowerOn",
+      "type": "external",
+      "source": "User",
+      "hasParameters": false,
+      "description": "User turns on main power to the system"
+    },
+    {
+      "name": "StartOperation",
+      "type": "external",
+      "source": "User",
+      "hasParameters": false,
+      "description": "User commands system to start power generation"
+    },
+    {
+      "name": "StopOperation",
+      "type": "external",
+      "source": "User",
+      "hasParameters": false,
+      "description": "User commands system to stop power generation"
+    },
+    {
+      "name": "PowerOff",
+      "type": "external",
+      "source": "User",
+      "hasParameters": false,
+      "description": "User turns off main power to the system"
+    },
+    {
+      "name": "SafetyViolationDetected",
+      "type": "internal",
+      "source": "System Control Module",
+      "hasParameters": false,
+      "description": "System detects violation of safety constraints"
+    },
+    {
+      "name": "ManualReset",
+      "type": "external",
+      "source": "User",
+      "hasParameters": false,
+      "description": "Operator resets system after fault clearance"
+    }
+  ],
+  "hasActions": true,
+  "actions": [
+    {
+      "name": "InitializeSystemControlModule",
+      "type": "command",
+      "target": "System Control Module",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": true,
+      "postconditions": [
+        "controlModuleReady"
+      ],
+      "hasTiming": false
+    },
+    {
+      "name": "CheckH2Pressure",
+      "type": "computation",
+      "target": "System Control Module",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": false
+    },
+    {
+      "name": "CheckBatteryStatus",
+      "type": "computation",
+      "target": "System Control Module",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": false
+    },
+    {
+      "name": "MonitorSafetyParameters",
+      "type": "logging",
+      "target": "System Control Module",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": true,
+      "timing": {
+        "execution_time": {
+          "value": 0.1,
+          "unit": "s"
+        },
+        "deadline": {
+          "value": 1,
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "name": "OpenSolenoidValve",
+      "type": "command",
+      "target": "Solenoid Valve",
+      "hasParameters": false,
+      "hasPreconditions": true,
+      "preconditions": [
+        "h2PressureOK"
+      ],
+      "hasPostconditions": false,
+      "hasTiming": false
+    },
+    {
+      "name": "StartFuelCellSystem",
+      "type": "command",
+      "target": "Fuel Cell System",
+      "hasParameters": false,
+      "hasPreconditions": true,
+      "preconditions": [
+        "h2ValveOpen"
+      ],
+      "hasPostconditions": false,
+      "hasTiming": false
+    },
+    {
+      "name": "EnableDC-DCConverter",
+      "type": "command",
+      "target": "DC-DC Converter",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": false
+    },
+    {
+      "name": "MonitorPowerFlow",
+      "type": "logging",
+      "target": "System Control Module",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": true,
+      "timing": {
+        "execution_time": {
+          "value": 0.05,
+          "unit": "s"
+        },
+        "deadline": {
+          "value": 0.5,
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "name": "RegulateDC-DCConverter",
+      "type": "command",
+      "target": "DC-DC Converter",
+      "hasParameters": true,
+      "parameters": {
+        "voltage_setpoint": {
+          "value": 24,
+          "unit": "V"
+        }
+      },
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": true,
+      "timing": {
+        "execution_time": {
+          "value": 0.01,
+          "unit": "s"
+        },
+        "deadline": {
+          "value": 0.1,
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "name": "ManageBatterySet",
+      "type": "command",
+      "target": "Battery Set",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": false
+    },
+    {
+      "name": "EmergencyStopFuelCellSystem",
+      "type": "command",
+      "target": "Fuel Cell System",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": false
+    },
+    {
+      "name": "CloseSolenoidValve",
+      "type": "command",
+      "target": "Solenoid Valve",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": false
+    },
+    {
+      "name": "DisableDC-DCConverter",
+      "type": "command",
+      "target": "DC-DC Converter",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": false
+    },
+    {
+      "name": "LogFault",
+      "type": "logging",
+      "target": "System Control Module",
+      "hasParameters": false,
+      "hasPreconditions": false,
+      "hasPostconditions": false,
+      "hasTiming": false
+    }
+  ],
+  "hasConstraints": true,
+  "constraints": [
+    {
+      "name": "HydrogenPressureSafety",
+      "type": "safety",
+      "scope": "global",
+      "expression": "h2Pressure >= 100000 AND h2Pressure <= 1500000",
+      "parameters": [
+        {
+          "name": "h2Pressure",
+          "min": {
+            "value": 100000,
+            "unit": "Pa"
+          },
+          "max": {
+            "value": 1500000,
+            "unit": "Pa"
+          },
+          "critical": true
+        }
+      ],
+      "violation_action": "transition_to_fault",
+      "severity": "critical"
+    },
+    {
+      "name": "FuelCellTemperatureSafety",
+      "type": "safety",
+      "scope": "component",
+      "expression": "fuelCellTemperature <= 333",
+      "parameters": [
+        {
+          "name": "fuelCellTemperature",
+          "max": {
+            "value": 333,
+            "unit": "K"
+          },
+          "critical": true
+        }
+      ],
+      "violation_action": "transition_to_fault",
+      "severity": "critical"
+    },
+    {
+      "name": "BatteryVoltageRange",
+      "type": "operational",
+      "scope": "component",
+      "expression": "batteryVoltage >= 21 AND batteryVoltage <= 30",
+      "parameters": [
+        {
+          "name": "batteryVoltage",
+          "min": {
+            "value": 21,
+            "unit": "V"
+          },
+          "max": {
+            "value": 30,
+            "unit": "V"
+          },
+          "critical": false
+        }
+      ],
+      "violation_action": "alarm",
+      "severity": "medium"
+    }
+  ],
+  "hasSequences": false,
+  "hasFaultHandling": true,
+  "fault_handling": [
+    {
+      "fault": "LowHydrogenPressure",
+      "detection": {
+        "parameter": "h2Pressure",
+        "threshold": {
+          "value": 100000,
+          "unit": "Pa"
+        },
+        "hasDuration": true,
+        "duration": {
+          "value": 2,
+          "unit": "s"
+        }
+      },
+      "response": {
+        "immediate_actions": [
+          "CloseSolenoidValve",
+          "StopFuelCellSystem"
+        ],
+        "transition_to": "FAULT",
+        "recovery": "manual",
+        "hasRecoveryConditions": true,
+        "recovery_conditions": [
+          {
+            "parameter": "h2Pressure",
+            "above": {
+              "value": 150000,
+              "unit": "Pa"
+            }
+          }
+        ]
+      },
+      "severity": "critical"
+    },
+    {
+      "fault": "OverTemperature",
+      "detection": {
+        "parameter": "fuelCellTemperature",
+        "threshold": {
+          "value": 333,
+          "unit": "K"
+        },
+        "hasDuration": true,
+        "duration": {
+          "value": 1,
+          "unit": "s"
+        }
+      },
+      "response": {
+        "immediate_actions": [
+          "StopFuelCellSystem",
+          "ActivateCooling"
+        ],
+        "transition_to": "FAULT",
+        "recovery": "automatic",
+        "hasRecoveryConditions": true,
+        "recovery_conditions": [
+          {
+            "parameter": "temperature",
+            "below": {
+              "value": 313,
+              "unit": "K"
+            }
+          }
+        ]
+      },
+      "severity": "critical"
+    }
+  ],
+  "metadata": {
+    "totalStates": 4,
+    "totalTransitions": 7,
+    "hasStateMachine": true,
+    "controlStrategy": "event_driven"
+  }
+}

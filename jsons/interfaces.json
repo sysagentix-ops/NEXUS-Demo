@@ -1,0 +1,388 @@
+{
+  "interfaces": [
+    {
+      "from": "H2 Storage Tank",
+      "to": "H2 Flow Meter",
+      "type": "fluid",
+      "bidirectional": false,
+      "medium": "hydrogen",
+      "specifications": {
+        "electrical": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": true,
+          "flowRate": {
+            "value": 15,
+            "unit": "Nl/min",
+            "max": 15
+          },
+          "pressure": {
+            "value": 100000,
+            "unit": "Pa",
+            "min": 100000,
+            "max": 1500000
+          },
+          "medium": "hydrogen"
+        },
+        "data": {
+          "applicable": false
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "Hydrogen supply line from storage tank to flow meter"
+    },
+    {
+      "from": "H2 Flow Meter",
+      "to": "Fuel Cell System",
+      "type": "fluid",
+      "bidirectional": false,
+      "medium": "hydrogen",
+      "specifications": {
+        "electrical": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": true,
+          "flowRate": {
+            "value": 15,
+            "unit": "Nl/min",
+            "max": 15
+          },
+          "medium": "hydrogen"
+        },
+        "data": {
+          "applicable": false
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "Hydrogen supply line from flow meter to fuel cell system"
+    },
+    {
+      "from": "Fuel Cell System",
+      "to": "DC-DC Converter",
+      "type": "electrical",
+      "bidirectional": false,
+      "medium": "power",
+      "specifications": {
+        "electrical": {
+          "applicable": true,
+          "voltage": {
+            "value": 24,
+            "unit": "V",
+            "min": 18,
+            "max": 36
+          },
+          "current": {
+            "value": 60,
+            "unit": "A",
+            "max": 60
+          },
+          "power": {
+            "value": 1200,
+            "unit": "W"
+          }
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": false
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "DC power output from fuel cell to DC-DC converter"
+    },
+    {
+      "from": "Battery Set",
+      "to": "DC-DC Converter",
+      "type": "electrical",
+      "bidirectional": true,
+      "medium": "power",
+      "specifications": {
+        "electrical": {
+          "applicable": true,
+          "voltage": {
+            "value": 24,
+            "unit": "V"
+          }
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": false
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "Bidirectional power connection between battery and DC-DC converter for charging/discharging"
+    },
+    {
+      "from": "System Control Module",
+      "to": "Fuel Cell System",
+      "type": "data",
+      "bidirectional": true,
+      "medium": "data",
+      "specifications": {
+        "electrical": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": true,
+          "protocol": "Ethernet"
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "Control and monitoring data exchange for fuel cell system"
+    },
+    {
+      "from": "System Control Module",
+      "to": "DC-DC Converter",
+      "type": "data",
+      "bidirectional": true,
+      "medium": "data",
+      "specifications": {
+        "electrical": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": true,
+          "protocol": "Ethernet"
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "Control and monitoring data exchange for DC-DC converter"
+    },
+    {
+      "from": "System Control Module",
+      "to": "Battery Set",
+      "type": "data",
+      "bidirectional": true,
+      "medium": "data",
+      "specifications": {
+        "electrical": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": true,
+          "protocol": "Ethernet"
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "Battery monitoring and control data exchange"
+    },
+    {
+      "from": "System Control Module",
+      "to": "H2 Flow Meter",
+      "type": "data",
+      "bidirectional": true,
+      "medium": "data",
+      "specifications": {
+        "electrical": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": true,
+          "protocol": "Ethernet"
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "Hydrogen flow measurement data exchange"
+    },
+    {
+      "from": "System Control Module",
+      "to": "Solenoid Valve",
+      "type": "data",
+      "bidirectional": true,
+      "medium": "data",
+      "specifications": {
+        "electrical": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": true,
+          "protocol": "Ethernet"
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "Control signals for hydrogen solenoid valve operation"
+    },
+    {
+      "from": "DC-DC Converter",
+      "to": "Electrical Connector",
+      "type": "electrical",
+      "bidirectional": false,
+      "medium": "power",
+      "specifications": {
+        "electrical": {
+          "applicable": true,
+          "voltage": {
+            "value": 24,
+            "unit": "V",
+            "min": 21,
+            "max": 30
+          },
+          "current": {
+            "value": 55,
+            "unit": "A",
+            "max": 55
+          },
+          "power": {
+            "value": 1500,
+            "unit": "W",
+            "max": 1500
+          }
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": false
+        },
+        "mechanical": {
+          "applicable": false
+        },
+        "thermal": {
+          "applicable": false
+        }
+      },
+      "physical": {
+        "applicable": false
+      },
+      "constraints": [],
+      "description": "Regulated DC power output from converter to external connector"
+    }
+  ],
+  "port_definitions": [],
+  "connection_groups": [
+    {
+      "name": "EthernetControlNetwork",
+      "type": "network",
+      "components": [
+        "System Control Module",
+        "Fuel Cell System",
+        "DC-DC Converter",
+        "Battery Set",
+        "H2 Flow Meter",
+        "Solenoid Valve"
+      ],
+      "topology": "star",
+      "specifications": {
+        "data": {
+          "applicable": true,
+          "protocol": "Ethernet"
+        },
+        "electrical": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": false
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "totalInterfaces": 10,
+    "interfaceTypes": [
+      "electrical",
+      "data",
+      "fluid"
+    ]
+  }
+}

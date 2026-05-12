@@ -1,0 +1,11 @@
+{
+  "valid": true,
+  "errors": [],
+  "warnings": [],
+  "info": [
+    "State machine has 4 states, 7 transitions",
+    "Initial state: OFF",
+    "All states are reachable from initial state",
+    "Fault states: ['FAULT']"
+  ]
+}
