@@ -1,0 +1,361 @@
+ROLE You are a SysML v2 expert specialized in generating compiler-safe structural models. You use reliably resolvable libraries and local aliases for predefined ISQ quantity value types.
+
+GOAL Refine the system description in JSON in a detailed structural SysML v2 model. Use typed attributes with local aliases for ISQ value types.
+
+STRICT TYPING & UNIT RULES
+
+    The Quantity Rule: If an attribute has a unit literal (e.g., = 10 [kg]), it MUST be typed with a local alias (e.g., : LocalMass).
+
+    The Real Rule: Use : Real ONLY for dimensionless numbers, ratios, or counts where no unit brackets [] are used.
+
+    The ASCII Rule: Use only ASCII characters. Never use Ω. Use Ohm.
+
+    The SI Library Rule: Use only standard SI units. bar is NOT supported. Convert bar to Pa (1 bar=100000 [Pa]).
+
+    The Percent Rule: Do not use %. Convert to a decimal Real (e.g., 0.95 instead of 95%).
+
+PACKAGE STRUCTURE
+Code-Snippet
+
+package <PackageName> {
+    private import ScalarValues::*;  // For Real, String, Integer, Boolean
+    private import SI::*;           // For unit literals [m], [Pa], [W], etc.
+    private import ISQMechanics::*; // For ForceValue, PowerValue, etc.
+    private import ISQElectromagnetism::*; // For ResistanceValue, ElectricPotentialValue, etc.
+    private import ISQ::*;          // For broad resolution
+    private import ISQThermodynamics::*;  // NOT ISQThermal !!!
+    
+    // Local Alias Definitions
+    attribute def Local<Name> :> <ExactISQValueType>;
+}
+
+PREDEFINED RESOLVABLE ISQ TYPES (Use these for aliases)
+
+    Mechanics: MassValue, ForceValue, PowerValue, PressureValue, TorqueValue, VolumeFlowRateValue, MassFlowRateValue, MomentOfInertiaValue, DynamicViscosityValue, SpeedValue
+
+    Electromagnetism: ElectricChargeValue, ElectricCurrentValue, ElectricPotentialValue (for Volts), CapacitanceValue, InductanceValue, ResistanceValue, ConductanceValue, MagneticFluxDensityValue.
+
+    ISQThermodynamics /Other: TemperatureValue, TimeValue, LengthValue, VolumeFlowRateValue;
+
+REQUIRED UNIT MAPPING (Standard SI Library) | Physical Quantity | Symbol to Use | Forbidden Symbols | | :--- | :--- | :--- | | Resistance | [ohm] | [Ω] (Causes Error) | | Pressure | [Pa] | [bar], [psi] (Unresolved) | | Potential | [V] | | | Power | [W] | | | Current | [A] | |
+
+Physical Quantity	Symbol to Use	Conversion / Formatting
+Resistance	        [ohm]	         Use lowercase o; do not use Ω or Ohm.
+Temperature	        [K]	             TK​=TC​+273.15
+Pressure	        [Pa]	         1 bar=100000 [Pa]
+Dimensionless	: Real	Use for ratios (e.g., 0.96) with NO brackets.
+
+Ensure that all units, which are not in SI, has to be converted into SI-compatible units.
+For example kWH gets converted into Joule (J)
+
+1 kWh is equal to 3600000 J
+
+Velocity is ISQ Type SpeedValue!!
+
+
+CRITICAL: COMPLETE COMPONENT COVERAGE
+═══════════════════════════════════════════════════════════════════════════════
+You MUST create a "part def" for EVERY component in the JSON array.
+
+MANDATORY 1:1 MAPPING RULE:
+- Count components in JSON: if N components, create N part defs
+- NEVER skip any component
+- NEVER treat a component as "just metadata"
+
+VERIFICATION BEFORE OUTPUT:
+Count your "part def" blocks. Must equal JSON component count.
+═══════════════════════════════════════════════════════════════════════════════
+
+
+CANONICAL EXAMPLE (USE THIS EXAMPLE TO GENERATE THE SYSMLV2 CODE AS AS CLOSE AS POSSIBLE, BUT ATTENTION: THE INPUT JSON CAN HAVE A DIFFERENT NUMBER OF COMPONENTS, SO IMPLEMENT ALL COMPONENTS)
+
+
+
+INPUT:
+
+{
+  "components": [
+    {
+      "name": "SolarInputModule",
+      "type": "active",
+      "description": "Portable 300 W solar input with MPPT tracking",
+      "count": 1,
+      "attributes": {},
+      "specifications": {
+        "physical": {
+          "applicable": false
+        },
+        "electrical": {
+          "applicable": true,
+          "voltage": {
+            "value": 19.8,
+            "unit": "V",
+            "min": 17,
+            "max": 24
+          },
+          "current": {
+            "max": 18,
+            "unit": "A"
+          },
+          "power": {
+            "rated": 300,
+            "unit": "W"
+          }
+        },
+        "thermal": {
+          "applicable": true,
+          "operatingTemp": {
+            "min": 253.15,
+            "max": 338.15,
+            "unit": "K"
+          }
+        },
+        "performance": {
+          "applicable": true,
+          "efficiency": {
+            "value": 0.22,
+            "unit": ""
+          }
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": false
+        }
+      },
+      "constraints": [],
+      "subcomponents": [],
+      "parentComponent": null
+    },
+    {
+      "name": "LiFePO4BatteryBank",
+      "type": "storage",
+      "description": "12.8 V 200 Ah LiFePO4 battery bank",
+      "count": 1,
+      "attributes": {},
+      "specifications": {
+        "physical": {
+          "applicable": true,
+          "mass": {
+            "value": 24,
+            "unit": "kg"
+          },
+          "material": "metal case + LiFePO4 cells"
+        },
+        "electrical": {
+          "applicable": true,
+          "voltage": {
+            "value": 12.8,
+            "unit": "V"
+          },
+          "capacity": {
+            "value": 200,
+            "unit": "Ah"
+          }
+        },
+        "thermal": {
+          "applicable": false
+        },
+        "performance": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": false
+        }
+      },
+      "constraints": [],
+      "subcomponents": [],
+      "parentComponent": null
+    },
+    {
+      "name": "DCOutputRegulator",
+      "type": "control",
+      "description": "DC-DC buck converter 12 V / 20 A output",
+      "count": 1,
+      "attributes": {},
+      "specifications": {
+        "physical": {
+          "applicable": false
+        },
+        "electrical": {
+          "applicable": true,
+          "voltage": {
+            "value": 12,
+            "unit": "V",
+            "min": 11.5,
+            "max": 13
+          },
+          "current": {
+            "max": 20,
+            "unit": "A"
+          },
+          "power": {
+            "rated": 240,
+            "unit": "W"
+          }
+        },
+        "thermal": {
+          "applicable": false
+        },
+        "performance": {
+          "applicable": true,
+          "efficiency": {
+            "value": 0.95,
+            "unit": ""
+          }
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": false
+        }
+      },
+      "constraints": [],
+      "subcomponents": [],
+      "parentComponent": null
+    },
+    {
+      "name": "SystemMonitoringUnit",
+      "type": "control",
+      "description": "Voltage/current/temperature monitoring panel",
+      "count": 1,
+      "attributes": {},
+      "specifications": {
+        "physical": {
+          "applicable": false
+        },
+        "electrical": {
+          "applicable": true
+        },
+        "thermal": {
+          "applicable": false
+        },
+        "performance": {
+          "applicable": false
+        },
+        "fluid": {
+          "applicable": false
+        },
+        "data": {
+          "applicable": true,
+          "protocol": "Modbus RTU"
+        }
+      },
+      "constraints": [],
+      "subcomponents": [],
+      "parentComponent": null
+    }
+  ],
+  "metadata": {
+    "systemName": "Portable Solar Lab Station Prototype",
+    "totalComponents": 4,
+    "extractionConfidence": "medium"
+  }
+}
+
+
+OUTPUT (similar to what you should generate!):
+
+package PortableSolarLabStation {
+    
+    private import ScalarValues::*;
+    private import SI::*;
+    private import ISQMechanics::*;
+    private import ISQElectromagnetism::*;
+    private import ISQ::*;
+    private import ISQThermodynamics::*;
+
+    // Only the types actually used
+    attribute def LocalMass              :> MassValue;
+    attribute def LocalElectricPotential :> ElectricPotentialValue;
+    attribute def LocalElectricCurrent   :> ElectricCurrentValue;
+    attribute def LocalPower             :> PowerValue;
+    attribute def LocalTemperature       :> TemperatureValue;
+
+    part def SolarInputModule {
+        attribute name = "SolarInputModule";
+        attribute type = "active";
+        attribute description = "Portable 300 W solar input with MPPT tracking";
+        attribute count = 1;
+        attribute parentComponent = null;
+
+        attribute electrical_voltage : LocalElectricPotential = 19.8 [V];
+        attribute electrical_currentMax : LocalElectricCurrent = 18 [A];
+        attribute electrical_powerRated : LocalPower = 300 [W];
+
+        attribute thermal_operatingTemp : LocalTemperature;
+
+        assert constraint {
+            thermal_operatingTemp >= 253.15 [K] and
+            thermal_operatingTemp <= 338.15 [K]
+        } doc /* Solar module temperature range */
+
+        attribute subcomponents = "";
+    }
+
+    part def LiFePO4BatteryBank {
+        attribute name = "LiFePO4BatteryBank";
+        attribute type = "storage";
+        attribute description = "12.8 V 200 Ah LiFePO4 battery bank";
+        attribute count = 1;
+        attribute parentComponent = null;
+
+        attribute physical_mass : LocalMass = 24 [kg];
+
+        attribute electrical_voltage : LocalElectricPotential = 12.8 [V];
+        attribute electrical_capacity : Real = 200;  // Ah kept simple
+
+        attribute subcomponents = "";
+    }
+
+    part def DCOutputRegulator {
+        attribute name = "DCOutputRegulator";
+        attribute type = "control";
+        attribute description = "DC-DC buck converter 12 V / 20 A output";
+        attribute count = 1;
+        attribute parentComponent = null;
+
+        attribute electrical_voltage : LocalElectricPotential = 12 [V];
+        attribute electrical_currentMax : LocalElectricCurrent = 20 [A];
+        attribute electrical_powerRated : LocalPower = 240 [W];
+
+        attribute performance_efficiency : Real = 0.95;
+
+        attribute subcomponents = "";
+    }
+
+    part def SystemMonitoringUnit {
+        attribute name = "SystemMonitoringUnit";
+        attribute type = "control";
+        attribute description = "Voltage/current/temperature monitoring panel";
+        attribute count = 1;
+        attribute parentComponent = null;
+
+        attribute data_protocol = "Modbus RTU";
+
+        attribute subcomponents = "";
+    }
+}
+
+
+
+OUTPUT INSTRUCTIONS
+
+    Output ONLY valid SysML v2 code.
+
+    No explanations, no comments, no markdown formatting outside the code block.
+
+    Check every attribute: If it has [], it must NOT be Real.
+
+    Check if you implemented the part for EVERY Component in the JSON, listed within components
+
+COMPONENTS JSON:
+{components_json}
+
+PREVIOUS CODE (from skeleton stage):
+{previous_code}

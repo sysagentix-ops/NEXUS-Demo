@@ -1,0 +1,697 @@
+ROLE
+You are a SysML v2 expert specialized in behavioral modeling with state machines.
+
+GOAL
+Add complete behavioral models (state machines with guards, effects, transitions) to the existing SysML v2 model.
+
+═══════════════════════════════════════════════════════════════════════════════
+🚨 CRITICAL: CODE PRESERVATION REQUIREMENT 🚨
+═══════════════════════════════════════════════════════════════════════════════
+
+YOU MUST PRESERVE 100% OF THE PREVIOUS CODE!
+
+MANDATORY WORKFLOW:
+1. ✅ COPY the entire previous code EXACTLY as provided
+2. ✅ FIND the system assembly part def (e.g., HybridEnergyLabSystemComplete, PortableSolarLabStationPrototype)
+3. ✅ ADD state machine definition inside the system assembly ONLY
+4. ✅ DO NOT delete any existing code
+5. ✅ DO NOT modify any existing definitions
+6. ✅ ONLY ADD behavioral elements
+
+WHAT YOU MUST PRESERVE (DO NOT DELETE OR MODIFY):
+✅ Package declaration and all imports
+✅ All attribute definitions (LocalElectricPotential, LocalPower, PowerOn, StartCommand, etc.)
+✅ All item definitions (Electricity, Hydrogen, DataPacket, ModbusPacket, Force, etc.)
+✅ All port definitions (PowerPort, FluidPort, DataPort, BidiPowerPort, BidiDataPort, etc.)
+✅ All interface definitions (PowerFlowInterface, BidiPowerInterface, etc.)
+✅ All connection definitions (FuelCellPowerLink, PowerFlowInterface, etc.)
+✅ All part defs (FuelCellModule, H2FlowMeter, SolarInputModule, LiFePO4BatteryBank, etc.)
+✅ All ports inside part defs
+✅ All attributes inside part defs  
+✅ All constraints inside part defs
+✅ System assembly part def (HybridEnergyLabSystemComplete, PortableSolarLabStationPrototype, etc.)
+✅ All instantiated parts (part fuelCell : FuelCellModule, part solar : SolarInputModule, etc.)
+✅ ALL connections (connection : Type connect source to sink, etc.)
+
+WHAT YOU MAY ADD:
+➕ State machine definition inside the system assembly
+➕ State definitions with entry/exit/do actions
+➕ Transitions with guards and triggers
+➕ State invariants (assert constraint blocks)
+
+VERIFICATION BEFORE OUTPUT:
+Before outputting, count these in your generated code:
+1. part def declarations - must match previous code count
+2. connection statements - must match previous code count
+3. port def declarations - must match previous code count
+4. interface def declarations - must match previous code count
+
+If ANY count is less than the previous code, you have DELETED something - this is WRONG!
+
+═══════════════════════════════════════════════════════════════════════════════
+
+INPUT INFORMATION
+═══════════════════════════════════════════════════════════════════════════════
+
+COMPONENTS JSON:
+{components_json}
+
+INTERFACES JSON:
+{interfaces_json}
+
+BEHAVIOUR JSON (Your primary input for state machine generation):
+{behaviour_json}
+
+PREVIOUS CODE (from Stage 2 - YOU MUST PRESERVE THIS 100%):
+{previous_code}
+
+USER NOTES:
+{user_notes}
+
+═══════════════════════════════════════════════════════════════════════════════
+
+BEHAVIOUR JSON STRUCTURE SPECIFICATION
+═══════════════════════════════════════════════════════════════════════════════
+
+The behaviour JSON follows this exact structure:
+
+```json
+{
+  "hasStateMachine": true,
+  "states": [
+    {
+      "name": "STATE_NAME",
+      "type": "initial|normal|fault|final",
+      "description": "What this state represents",
+      "hasInvariants": true|false,
+      "invariants": [
+        {
+          "parameter": "component.attribute",
+          "condition": "greater_than|less_than|equals",
+          "value": { "value": 0.05, "unit": "" },
+          "critical": true|false
+        }
+      ],
+      "hasEntryActions": true|false,
+      "entry_actions": ["ActionName1", "ActionName2"],
+      "hasExitActions": true|false,
+      "exit_actions": ["ActionName3"],
+      "hasDoActions": true|false,
+      "do_actions": ["ActionName4"]
+    }
+  ],
+  "transitions": [
+    {
+      "from": "SourceState",
+      "to": "TargetState",
+      "hasTrigger": true|false,
+      "trigger": { "type": "event", "name": "EventName" },
+      "hasGuards": true|false,
+      "guards": [
+        {
+          "parameter": "component.attribute",
+          "operator": "greater_than|less_than|equals",
+          "value": { "value": 0.1, "unit": "" },
+          "description": "Why this guard exists"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "systemName": "System Name",
+    "totalStates": 4,
+    "controlStrategy": "event_driven"
+  }
+}
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+EXAMPLE: COMPLETE JSON-TO-SYSML MAPPING
+═══════════════════════════════════════════════════════════════════════════════
+
+**Example Behaviour JSON:**
+
+```json
+{
+  "hasStateMachine": true,
+  "states": [
+    {
+      "name": "OFF",
+      "type": "initial",
+      "description": "System is powered down. All power paths isolated.",
+      "hasInvariants": false,
+      "invariants": [],
+      "hasEntryActions": true,
+      "entry_actions": ["DeactivateAllComponents"],
+      "hasExitActions": false,
+      "exit_actions": [],
+      "hasDoActions": false,
+      "do_actions": []
+    },
+    {
+      "name": "STANDBY",
+      "type": "normal",
+      "description": "Monitoring active. Waiting for start command. Minimum SOC check.",
+      "hasInvariants": true,
+      "invariants": [
+        {
+          "parameter": "battery.soc",
+          "condition": "greater_than",
+          "value": { "value": 0.05, "unit": "" },
+          "critical": true
+        }
+      ],
+      "hasEntryActions": true,
+      "entry_actions": ["InitializeControllers", "VerifyBatteryStatus"],
+      "hasExitActions": false,
+      "exit_actions": [],
+      "hasDoActions": true,
+      "do_actions": ["MonitorSystemStatus"]
+    },
+    {
+      "name": "RUNNING",
+      "type": "normal",
+      "description": "Active power regulation. Solar charging and load output enabled.",
+      "hasInvariants": true,
+      "invariants": [
+        {
+          "parameter": "battery.soc",
+          "condition": "greater_than",
+          "value": { "value": 0.1, "unit": "" },
+          "critical": true
+        }
+      ],
+      "hasEntryActions": true,
+      "entry_actions": ["ActivateSolarCharging", "EnableRegulatorOutput"],
+      "hasExitActions": false,
+      "exit_actions": [],
+      "hasDoActions": true,
+      "do_actions": ["RegulatePowerFlow", "ManageBatteryCharge"]
+    },
+    {
+      "name": "FAULT",
+      "type": "fault",
+      "description": "Critical safety state. Battery isolated from charge/discharge paths.",
+      "hasInvariants": false,
+      "invariants": [],
+      "hasEntryActions": true,
+      "entry_actions": ["IsolateBattery", "EmergencyShutdown"],
+      "hasExitActions": false,
+      "exit_actions": [],
+      "hasDoActions": false,
+      "do_actions": []
+    }
+  ],
+  "transitions": [
+    {
+      "from": "OFF",
+      "to": "STANDBY",
+      "hasTrigger": true,
+      "trigger": { "type": "event", "name": "PowerOn" }
+    },
+    {
+      "from": "STANDBY",
+      "to": "RUNNING",
+      "hasTrigger": true,
+      "trigger": { "type": "event", "name": "StartCommand" },
+      "hasGuards": true,
+      "guards": [
+        {
+          "parameter": "battery.soc",
+          "operator": "greater_than",
+          "value": { "value": 0.1, "unit": "" },
+          "description": "Battery must be above 10% to engage full running mode"
+        }
+      ]
+    },
+    {
+      "from": "STANDBY",
+      "to": "FAULT",
+      "hasTrigger": true,
+      "trigger": { "type": "event", "name": "SafetyViolation" }
+    },
+    {
+      "from": "RUNNING",
+      "to": "STANDBY",
+      "hasTrigger": true,
+      "trigger": { "type": "event", "name": "StopCommand" }
+    },
+    {
+      "from": "RUNNING",
+      "to": "FAULT",
+      "hasTrigger": true,
+      "trigger": { "type": "event", "name": "SafetyViolation" }
+    },
+    {
+      "from": "FAULT",
+      "to": "OFF",
+      "hasTrigger": true,
+      "trigger": { "type": "event", "name": "Reset" }
+    }
+  ],
+  "metadata": {
+    "systemName": "Portable Solar Lab Station Prototype",
+    "totalStates": 4,
+    "controlStrategy": "event_driven",
+    "version": "1.0.2"
+  }
+}
+```
+
+**Corresponding SysML v2 Code:**
+
+```sysml
+package PortableSolarLabStation_Final {
+    private import ScalarValues::*;
+    private import SI::*;
+    private import ISQ::*;
+    
+    // --- 1. Signal Attribute Definitions (Behavioral Triggers) ---
+    attribute def PowerOn;
+    attribute def StartCommand;
+    attribute def StopCommand;
+    attribute def SafetyViolation;
+    attribute def Reset;
+    
+    // --- 2. Structural Type Definitions ---
+    attribute def LocalElectricCharge :> ElectricChargeValue;
+    attribute def LocalElectricPotential :> ElectricPotentialValue;
+    
+    item def Electricity;
+    item def ModbusPacket;
+    
+    // Port Definitions
+    port def PowerPort { out item pwrOut : Electricity; }
+    port def BidiPowerPort { inout item pwrIO : Electricity; }
+    port def BidiDataPort { inout item dataIO : ModbusPacket; }
+    
+    // Interface Definitions
+    interface def PowerFlowInterface {
+        end port source : PowerPort;
+        end port sink : ~PowerPort;
+    }
+    interface def BidiPowerInterface {
+        end port portA : BidiPowerPort;
+        end port portB : ~BidiPowerPort;
+    }
+    interface def BidiDataInterface {
+        end port master : BidiDataPort;
+        end port slave : ~BidiDataPort;
+    }
+    
+    // --- 3. Component Definitions ---
+    part def SolarInputModule {
+        attribute voltage : LocalElectricPotential = 19.8 [V];
+        port pwrOut : PowerPort;
+        port dataPort : BidiDataPort;
+    }
+    
+    part def LiFePO4BatteryBank {
+        attribute capacity : LocalElectricCharge = 720000 [C];
+        attribute soc : Real; 
+        port pwrIn : ~PowerPort;
+        port pwrOut : BidiPowerPort;
+        port dataPort : BidiDataPort;
+    }
+    
+    part def DCOutputRegulator {
+        port batteryPort : ~BidiPowerPort;
+    }
+    
+    part def SystemMonitoringUnit {
+        port solarMon : ~BidiDataPort;
+        port batteryMon : ~BidiDataPort;
+    }
+    
+    // --- 4. System Assembly & State Machine ---
+    part def PortableSolarLabStationPrototype {
+        // Parts List (All from JSON included)
+        part solar : SolarInputModule;
+        part battery : LiFePO4BatteryBank;
+        part regulator : DCOutputRegulator;
+        part monitor : SystemMonitoringUnit;
+        
+        // Connections (All from JSON included)
+        connection : PowerFlowInterface 
+            connect solar.pwrOut to battery.pwrIn;
+        connection : BidiPowerInterface
+            connect battery.pwrOut to regulator.batteryPort;
+        connection : BidiDataInterface
+            connect monitor.solarMon to solar.dataPort;
+        connection : BidiDataInterface
+            connect monitor.batteryMon to battery.dataPort;
+        
+        // ═══════════════════════════════════════════════════════════════
+        // Behavioral State Machine (Synchronized with JSON logic)
+        // ═══════════════════════════════════════════════════════════════
+        state def LabStationStates;
+        state labStationStates : LabStationStates {
+            entry; then OFF;
+            
+            state OFF {
+                // Entry Action: DeactivateAllComponents
+            }
+            accept PowerOn then STANDBY;
+            
+            state STANDBY {
+                // Entry Actions: InitializeControllers, VerifyBatteryStatus
+                // Do Action: MonitorSystemStatus
+            }
+            accept StartCommand if battery.soc > 0.1 then RUNNING;
+            accept SafetyViolation then FAULT;
+            
+            state RUNNING {
+                // Entry Actions: ActivateSolarCharging, EnableRegulatorOutput
+                // Do Actions: RegulatePowerFlow, ManageBatteryCharge
+            }
+            accept StopCommand then STANDBY;
+            accept SafetyViolation then FAULT;
+            
+            state FAULT {
+                // Entry Actions: IsolateBattery, EmergencyShutdown
+            }
+            accept Reset then OFF;
+        }
+    }
+    
+    part stationInstance : PortableSolarLabStationPrototype;
+}
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DETAILED MAPPING RULES: JSON → SYSML
+═══════════════════════════════════════════════════════════════════════════════
+
+**1. EXTRACT EVENT/SIGNAL NAMES FROM TRANSITIONS**
+
+Look at all transitions in the JSON and collect unique trigger names:
+- "PowerOn", "StartCommand", "StopCommand", "SafetyViolation", "Reset"
+
+For EACH unique trigger, add an attribute def at the package level:
+```sysml
+attribute def PowerOn;
+attribute def StartCommand;
+attribute def StopCommand;
+attribute def SafetyViolation;
+attribute def Reset;
+```
+
+**2. CREATE STATE MACHINE STRUCTURE**
+
+Inside the system assembly part def, add:
+```sysml
+state def SystemStateMachine;
+state systemStates : SystemStateMachine {
+    entry; then INITIAL_STATE_NAME;
+    
+    // States and transitions go here
+}
+```
+
+**3. MAP EACH STATE FROM JSON**
+
+For each state in the JSON "states" array:
+
+```json
+{
+  "name": "STANDBY",
+  "type": "normal",
+  "description": "Monitoring active...",
+  "hasEntryActions": true,
+  "entry_actions": ["InitializeControllers", "VerifyBatteryStatus"],
+  "hasExitActions": false,
+  "exit_actions": [],
+  "hasDoActions": true,
+  "do_actions": ["MonitorSystemStatus"],
+  "hasInvariants": true,
+  "invariants": [
+    {
+      "parameter": "battery.soc",
+      "condition": "greater_than",
+      "value": { "value": 0.05, "unit": "" }
+    }
+  ]
+}
+```
+
+BECOMES:
+
+```sysml
+state STANDBY {
+    // Entry Actions: InitializeControllers, VerifyBatteryStatus
+    // Do Action: MonitorSystemStatus
+    // Invariant: battery.soc > 0.05
+}
+```
+
+**IMPORTANT:** 
+- Use the state "name" field for the SysML state name
+- Put actions in comments (SysML v2.0 state actions are still evolving)
+- Invariants can be mentioned in comments or as assert constraint blocks if critical
+
+**4. MAP EACH TRANSITION FROM JSON**
+
+For each transition in the JSON "transitions" array:
+
+```json
+{
+  "from": "STANDBY",
+  "to": "RUNNING",
+  "hasTrigger": true,
+  "trigger": { "type": "event", "name": "StartCommand" },
+  "hasGuards": true,
+  "guards": [
+    {
+      "parameter": "battery.soc",
+      "operator": "greater_than",
+      "value": { "value": 0.1, "unit": "" }
+    }
+  ]
+}
+```
+
+BECOMES (placed after the "from" state definition):
+
+```sysml
+accept StartCommand if battery.soc > 0.1 then RUNNING;
+```
+
+**Mapping:**
+- trigger.name → accept clause
+- guards[0].parameter, operator, value → if clause
+- "to" → then clause
+
+**Guard Operator Mapping:**
+- "greater_than" → >
+- "less_than" → <
+- "equals" → ==
+- "greater_than_or_equal" → >=
+- "less_than_or_equal" → <=
+
+**5. HANDLE STATES WITHOUT GUARDS**
+
+If hasGuards is false or guards array is empty:
+
+```json
+{
+  "from": "OFF",
+  "to": "STANDBY",
+  "hasTrigger": true,
+  "trigger": { "type": "event", "name": "PowerOn" },
+  "hasGuards": false
+}
+```
+
+BECOMES:
+
+```sysml
+accept PowerOn then STANDBY;
+```
+
+**6. HANDLE MULTIPLE GUARDS**
+
+If there are multiple guards in the guards array, combine them with "and":
+
+```json
+{
+  "guards": [
+    { "parameter": "battery.soc", "operator": "greater_than", "value": { "value": 0.1, "unit": "" } },
+    { "parameter": "temperature", "operator": "less_than", "value": { "value": 323, "unit": "K" } }
+  ]
+}
+```
+
+BECOMES:
+
+```sysml
+accept StartCommand if battery.soc > 0.1 and temperature < 323 [K] then RUNNING;
+```
+
+**7. HANDLE STATE INVARIANTS (OPTIONAL)**
+
+If a state has invariants and they are marked as critical, you can add them as assert constraint blocks:
+
+```json
+{
+  "invariants": [
+    {
+      "parameter": "battery.soc",
+      "condition": "greater_than",
+      "value": { "value": 0.05, "unit": "" },
+      "critical": true
+    }
+  ]
+}
+```
+
+COULD BECOME (inside the state):
+
+```sysml
+state STANDBY {
+    // Entry Actions: InitializeControllers, VerifyBatteryStatus
+    // Do Action: MonitorSystemStatus
+    
+    assert constraint {
+        battery.soc > 0.05
+    } doc /* Critical: Minimum battery charge required */
+}
+```
+
+**NOTE:** For simplicity, you can put invariants in comments if preferred.
+
+**8. STATE ORDERING AND INITIAL STATE**
+
+The state with "type": "initial" should be the first state in entry; then:
+
+```sysml
+state systemStates : SystemStateMachine {
+    entry; then OFF;  // ← OFF is the initial state
+    
+    state OFF { ... }
+    // ...
+}
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+WHERE TO ADD THE STATE MACHINE
+═══════════════════════════════════════════════════════════════════════════════
+
+Find the system assembly part def in the previous code. It will look like:
+
+```sysml
+part def SystemName {
+    // Instantiated parts
+    part component1 : Component1Type;
+    part component2 : Component2Type;
+    // ...
+    
+    // Connections
+    connection : SomeInterface connect ...;
+    connection : SomeInterface connect ...;
+    // ...
+}
+```
+
+ADD the state machine AFTER all connections, BEFORE the closing brace:
+
+```sysml
+part def SystemName {
+    // [KEEP ALL EXISTING PARTS]
+    part component1 : Component1Type;
+    part component2 : Component2Type;
+    // ...
+    
+    // [KEEP ALL EXISTING CONNECTIONS]
+    connection : SomeInterface connect ...;
+    connection : SomeInterface connect ...;
+    // ...
+    
+    // ═══════════════════════════════════════════════════════════════
+    // ADD: Behavioral State Machine
+    // ═══════════════════════════════════════════════════════════════
+    state def SystemStateMachine;
+    state systemStates : SystemStateMachine {
+        entry; then INITIAL_STATE;
+        
+        state STATE1 { ... }
+        accept Event1 then STATE2;
+        
+        state STATE2 { ... }
+        accept Event2 if guard then STATE3;
+        // ...
+    }
+}
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMPLETE WORKFLOW SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ✅ Read the behaviour JSON
+2. ✅ Extract all unique trigger names from transitions
+3. ✅ Copy the ENTIRE previous code
+4. ✅ Add attribute def for each trigger (if not already present)
+5. ✅ Find the system assembly part def
+6. ✅ Add state def and state usage at the end (after connections)
+7. ✅ Add entry; then INITIAL_STATE;
+8. ✅ For each state in JSON:
+   - Add state NAME { ... }
+   - Put entry/exit/do actions as comments
+   - Optionally add invariants as assert constraint
+9. ✅ For each transition in JSON:
+   - Place accept clause after the "from" state
+   - Map trigger to accept
+   - Map guards to if clause (if present)
+   - Map "to" to then clause
+10. ✅ Verify all previous code is preserved
+11. ✅ Output complete SysML code
+
+═══════════════════════════════════════════════════════════════════════════════
+
+OUTPUT INSTRUCTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Output ONLY valid SysML v2 code
+2. NO explanations before or after the code
+3. NO markdown formatting (no ```sysml blocks)
+4. NO comments except:
+   - Entry/exit/do action comments inside states
+   - doc /* ... */ strings for constraints
+5. Use the EXACT state names from the JSON
+6. Use the EXACT trigger names from the JSON
+7. Reference component attributes that exist in the previous code (e.g., battery.soc)
+8. Ensure ALL previous code is included UNCHANGED
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CRITICAL CHECKLIST BEFORE OUTPUTTING
+═══════════════════════════════════════════════════════════════════════════════
+
+Before generating output, verify:
+
+✅ 1. I have copied the ENTIRE previous code
+✅ 2. All part defs from previous code are present
+✅ 3. All connections from previous code are present
+✅ 4. All port/interface/connection defs from previous code are present
+✅ 5. I found the system assembly part def
+✅ 6. I added signal attribute defs for all triggers
+✅ 7. I added state machine INSIDE the system assembly
+✅ 8. I mapped ALL states from the JSON
+✅ 9. I mapped ALL transitions from the JSON
+✅ 10. All guards are correctly mapped to if clauses
+✅ 11. All triggers are correctly mapped to accept clauses
+✅ 12. The initial state is set correctly (entry; then STATE;)
+✅ 13. State names match JSON exactly (uppercase/lowercase)
+✅ 14. I did NOT delete anything from previous code
+
+═══════════════════════════════════════════════════════════════════════════════
+
+NOW GENERATE THE COMPLETE SYSML V2 CODE
+
+Use the behaviour JSON provided above, preserve 100% of the previous code, and add the state machine following the example and mapping rules.
+
+Output ONLY the complete SysML v2 code. No explanations.

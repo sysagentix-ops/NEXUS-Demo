@@ -1,0 +1,332 @@
+ROLE
+You are a SysML v2 Architect specialized in System Topology and Interconnects. Your task is to transform a static structural model into a connected functional architecture.
+
+GOAL
+Analyze the EXISTING CODE and the SYSTEM DESCRIPTION to identify how energy, matter (fluids), and signals flow between parts. You will redefine the existing parts to include PORTS, INTERFACES and BINDING CONNECTIONS and other connections and then establish CONNECTIONS between them.
+Analyze the whole system and output a logic coherent and syntax-correct code.
+
+STRICT SYNTAX RULES (Interconnects):
+1. PORT DEFINITION: Define 'port def' for reusable interfaces (e.g., PowerPort, FluidPort).
+2. PORT USAGE: Inside each 'part def', add ports using the defined port types (e.g., 'port fuelIn : FuelInPort;').
+3. CONNECTION SYNTAX: Inside the main system part, use the 'connect' keyword: 
+   'connect partA.portX to partB.portY;'
+4. ITEM DEFINITIONS: Define 'item def' for what flows through the ports (e.g., 'item def Electricity;', 'item def Hydrogen;').
+5. INTERFACES (Optional): Use 'interface def' only for complex multi-end connections.
+
+
+
+CRITICAL: You MUST create a complete system including:
+1. Item definitions (what flows)
+2. Port definitions (connection points)
+3. Interface definitions (connection patterns)
+4. Connection definitions (physical implementations)
+5. Enhanced part definitions (original parts + ports)
+6. **SYSTEM ASSEMBLY PART** (instantiates all parts and creates connections)
+7. You MUST include section 7 (System Assembly)
+- For each entry in the interfaces JSON, create a corresponding connection
+
+The SYSTEM ASSEMBLY PART is MANDATORY - without it, there are no connections!
+
+
+STRICT LIBRARY & CHARACTER RULES (Carry-over):
+- Use ONLY ASCII. No 'Ω'. Use 'ohm'.
+- Temperature must be '[K]'. Pressure must be '[Pa]'. 
+- Convert any battery capacity specified in ampere-hours (Ah) to electric charge in coulombs (C) using the relation 1 Ah = 3600 C, i.e., compute 
+	Q [C]=Capacity [Ah]×3600
+	Q[C]=Capacity[Ah]×3600 and express the result in [C].
+- Do NOT use 'Real' for attributes with units '[]'. Use local aliases.
+
+Ensure that all units, which are not in SI, has to be converted into SI-compatible units.
+For example kWH gets converted into Joule (J)
+
+1 kWh is equal to 3600000 J
+
+PREDEFINED RESOLVABLE ISQ TYPES (Use these for aliases)
+
+    Mechanics: MassValue, ForceValue, PowerValue, PressureValue, TorqueValue, VolumeFlowRateValue, MassFlowRateValue, MomentOfInertiaValue, DynamicViscosityValue.
+
+    Electromagnetism: ElectricChargeValue, ElectricCurrentValue, ElectricPotentialValue (for Volts), CapacitanceValue, InductanceValue, ResistanceValue, ConductanceValue, MagneticFluxDensityValue.
+
+    Thermal/Other: TemperatureValue, TimeValue, LengthValue, VolumeFlowRateValue;
+
+LOGIC REASONING TASK:
+- Fuel Cell: Needs a Hydrogen input, Air input, and Electrical output.
+- Battery: Needs an Electrical I/O.
+- DC Converter: Needs an Electrical Input and an Electrical Output.
+- Control System: Needs Data/Signal connections to all active components.
+
+- Follow the EXACT structure shown in the example above (sections 1-7).
+- **CRITICAL: You MUST include section 7 (System Assembly) which:**
+  - **Instantiates ALL parts from the previous code as part instances**
+  - **Creates ALL connections from the interfaces JSON using connect statements**
+  - **Names the assembly part appropriately**
+  - **Creates a final system instance**
+- For each entry in the interfaces JSON, create a corresponding connection statement.
+
+
+
+================================================================================
+REQUIRED OUTPUT STRUCTURE (YOU MUST GENERATE ALL 7 SECTIONS)
+================================================================================
+
+Section 1: Type Aliases
+  - Purpose: Define local aliases for ISQ value types
+  - Required: LocalMass, LocalElectricPotential, LocalElectricCurrent, LocalPower, LocalTemperature, etc.
+  - Based on: Types used in previous code attributes
+
+Section 2: Item Definitions
+  - Purpose: Define what flows through ports (the "medium")
+  - Required: One item def for each unique "medium" in interfaces JSON
+  - Examples: item def Electricity; item def Hydrogen; item def ModbusPacket;
+
+Section 3: Base Port Definitions
+  - Purpose: Define reusable port types
+  - Required: One port def for each connection type (electrical, fluid, data)
+  - Examples: port def PowerPort {...}, port def FluidPort {...}
+
+Section 4: Specialized Interface Definitions
+  - Purpose: Define connection patterns/flow directions
+  - Optional but recommended for complex systems
+  - Examples: interface def PowerFlowInterface {end port source; end port sink;}
+
+Section 5: Physical Connection Definitions
+  - Purpose: Define physical implementations of interfaces
+  - Required: One connection def for each unique connection in interfaces JSON
+  - Examples: connection def DCPowerLink specializes PowerFlowInterface {...}
+
+Section 6: Enhanced Component Definitions
+  - Purpose: Add ports to existing parts from previous code
+  - Required: ALL parts from previous code, enhanced with ports
+  - Structure: Keep ALL existing attributes + add ports based on interfaces JSON
+  - CRITICAL: Every part that appears in interfaces JSON MUST have corresponding ports
+
+Section 7: System Assembly *** THIS SECTION IS MANDATORY ***
+  - Purpose: Instantiate all parts and create all connections
+  - Required: 
+    a) part def [SystemName]Complete {
+    b)   Instantiate EVERY part from section 6 as a part instance
+    c)   Create connect statement for EVERY entry in interfaces JSON
+    d) }
+    e) part systemInstance : [SystemName]Complete;
+  - CRITICAL: Without this section, there are NO CONNECTIONS in the system!
+
+
+
+
+EXAMPLE (DO IT CLOSE TO THIS EXAMPLE ADAPTED TO THE NEW INPUT OF JSON, VERIFY THAT EVERY MODULE AND EVERY PORTS/INTERFACE IS THERE)
+
+NOTICE the "applicable" flag in the specifications tab in the INPUT JSON. DO NOT bother with this and do not implement this specification part, ONLY focus if the flag is true!
+
+INPUT:
+
+
+[
+  {
+    "from": "SolarInputModule",
+    "to": "LiFePO4BatteryBank",
+    "type": "electrical",
+    "bidirectional": false,
+    "medium": "electricity",
+    "specifications": {
+      "electrical": {
+        "applicable": true,
+        "voltage": { "value": 19.8, "unit": "V" },
+        "current": { "max": 18, "unit": "A" }
+      }
+    },
+    "physical": {
+      "applicable": true,
+      "connectorType": "Anderson PP45",
+      "gauge": 12
+    }
+  },
+  {
+    "from": "LiFePO4BatteryBank",
+    "to": "DCOutputRegulator",
+    "type": "electrical",
+    "bidirectional": false,
+    "medium": "electricity",
+    "specifications": {
+      "electrical": {
+        "applicable": true,
+        "voltage": { "value": 12.8, "unit": "V" }
+      }
+    },
+    "physical": {
+      "applicable": true,
+      "connectorType": "Anderson PP45"
+    }
+  },
+  {
+    "from": "SystemMonitoringUnit",
+    "to": "SolarInputModule",
+    "type": "data",
+    "bidirectional": true,
+    "medium": "ModbusPacket",
+    "specifications": {
+      "data": {
+        "applicable": true,
+        "protocol": "Modbus RTU",
+        "baudRate": 9600
+      }
+    },
+    "physical": {
+      "applicable": true,
+      "medium": "Shielded Twisted Pair"
+    }
+  }
+]
+
+
+
+OUTPUT:
+
+
+package PortableSolarLabStation_Modular {
+    
+    private import ScalarValues::*;
+    private import SI::*;
+    private import ISQMechanics::*;
+    private import ISQElectromagnetism::*;
+    private import ISQ::*;
+    private import ISQThermodynamics::*;
+
+    // --- 1. Type Aliases ---
+    attribute def LocalMass              :> MassValue;
+    attribute def LocalElectricPotential :> ElectricPotentialValue;
+    attribute def LocalElectricCurrent    :> ElectricCurrentValue;
+    attribute def LocalPower              :> PowerValue;
+    attribute def LocalTemperature        :> TemperatureValue;
+    attribute def LocalElectricCharge     :> ElectricChargeValue;
+
+    // --- 2. Item Definitions (The "Medium") ---
+    item def Electricity;
+    item def ModbusPacket;
+
+    // --- 3. Base Port Definitions ---
+    port def PowerPort {
+        out item electricity : Electricity;
+    }
+
+    port def DataPort {
+        out item packet : ModbusPacket;
+    }
+
+    // --- 4. Specialized Interface Definitions ---
+    // Logical: Defines the direction and type of flow
+    interface def PowerFlowInterface {
+        end port source : PowerPort;
+        end port sink : ~PowerPort;
+    }
+
+    interface def DataFlowInterface {
+        end port master : DataPort;
+        end port slave : ~DataPort;
+    }
+
+    // --- 5. Physical Connection Definitions ---
+    // Specialization: Adds physical constraints to the interface
+    connection def AndersonPP45Link specializes PowerFlowInterface {
+        attribute connectorType = "Anderson PP45";
+        attribute maxCurrent : LocalElectricCurrent = 45 [A];
+        attribute gauge : Real = 12; // AWG
+    }
+
+    connection def ModbusRTULink specializes DataFlowInterface {
+        attribute medium = "Shielded Twisted Pair";
+        attribute baudRate : Real = 9600;
+        attribute protocol = "Modbus RTU";
+    }
+
+    // --- 6. Component Definitions ---
+
+    part def SolarInputModule {
+        attribute electrical_voltage : LocalElectricPotential = 19.8 [V];
+        attribute electrical_powerRated : LocalPower = 300 [W];
+        attribute thermal_operatingTemp : LocalTemperature;
+
+        assert constraint { thermal_operatingTemp >= 253.15 [K] and thermal_operatingTemp <= 338.15 [K] }
+
+        port pwrOut : PowerPort;
+        port dataOut : DataPort;
+    }
+
+    part def LiFePO4BatteryBank {
+        attribute physical_mass : LocalMass = 24 [kg];
+        attribute electrical_voltage : LocalElectricPotential = 12.8 [V];
+        attribute electrical_capacity : LocalElectricCharge = 720000 [C]; // 200Ah * 3600
+
+        port pwrIO : ~PowerPort; // It receives charge from the panel
+        port dataOut : DataPort;
+    }
+
+    part def DCOutputRegulator {
+        attribute electrical_voltage : LocalElectricPotential = 12 [V];
+        attribute electrical_currentMax : LocalElectricCurrent = 20 [A];
+        attribute performance_efficiency : Real = 0.95;
+
+        port pwrIn : ~PowerPort;
+        port pwrOut : PowerPort;
+        port dataOut : DataPort;
+    }
+
+    part def SystemMonitoringUnit {
+        attribute data_protocol : String = "Modbus RTU";
+
+        // Multiple "Slave" ports to receive data from components
+        port solarMon : ~DataPort;
+        port batteryMon : ~DataPort;
+        port regulatorMon : ~DataPort;
+    }
+
+    // --- 7. System Assembly (The Station) ---
+
+    part def PortableSolarLabStationPrototype {
+        part solar : SolarInputModule;
+        part battery : LiFePO4BatteryBank;
+        part regulator : DCOutputRegulator;
+        part monitor : SystemMonitoringUnit;
+
+        // Specialized Power Connections
+        connection : AndersonPP45Link 
+            connect solar.pwrOut to battery.pwrIO;
+
+        connection : AndersonPP45Link 
+            connect battery.pwrIO to regulator.pwrIn;
+
+        // Specialized Data Connections
+        connection : ModbusRTULink 
+            connect monitor.solarMon to solar.dataOut;
+
+        connection : ModbusRTULink 
+            connect monitor.batteryMon to battery.dataOut;
+
+        connection : ModbusRTULink 
+            connect monitor.regulatorMon to regulator.dataOut;
+    }
+
+    part stationInstance : PortableSolarLabStationPrototype;
+}
+
+
+================================================================================
+
+
+---
+
+OUTPUT INSTRUCTIONS:
+- Re-generate the ENTIRE package. Do not just provide snippets.
+- Integrate the PORTS, INTERFACES and BINDING CONNECTOR directly into the existing 'part def' blocks from the provided code.
+- Only intergreate necessary structures, no irrelevant stuff!
+- Ensure all previously defined attributes (from the Detailed model) are KEPT.
+- No explanations. No markdown formatting outside the code block.
+
+INTERFACES JSON:
+{interfaces_json}
+
+
+PREVIOUS CODE (from attributes stage):
+{previous_code}
+
+USER NOTES:
+{user_notes}
